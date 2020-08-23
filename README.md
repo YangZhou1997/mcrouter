@@ -48,6 +48,20 @@ The installation is a standard autotools flow:
     $ sudo make install
     $ mcrouter --help
 
+Fixing fmt package
+```
+git clone https://github.com/fmtlib/fmt.git
+cd fmt
+cmake CMakeLists.txt
+make
+sudo make install
+```
+
+Install dep and compiling
+```
+./mcrouter/mcrouter/scripts/install_ubuntu_16.04.sh $HOME/mcrouter-install/ -j4
+```
+
 Assuming you have a memcached instance on the local host running on port 5001,
 the simplest mcrouter setup is:
 
