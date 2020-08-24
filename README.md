@@ -48,10 +48,17 @@ The installation is a standard autotools flow:
     $ sudo make install
     $ mcrouter --help
 
+Alternatively, you can install dep and compile by: 
+```
+./mcrouter/mcrouter/scripts/install_ubuntu_18.04.sh $HOME/mcrouter-install/ -j4
+export LD_LIBRARY_PATH=$HOME/mcrouter-install/install/lib
+sudo ln -s $HOME/mcrouter-install/install/bin/mcrouter /usr/local/bin/mcrouter
+```
+
 Assuming you have a memcached instance on the local host running on port 5001,
 the simplest mcrouter setup is:
 
-    $ mcrouter \
+    $ sudo LD_LIBRARY_PATH=$HOME/mcrouter-install/install/lib mcrouter \
         --config-str='{"pools":{"A":{"servers":["127.0.0.1:5001"]}},
                       "route":"PoolRoute|A"}' \
         -p 5000
