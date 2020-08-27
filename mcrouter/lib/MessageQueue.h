@@ -184,6 +184,8 @@ class MessageQueue {
         folly::EventHandler::READ | folly::EventHandler::PERSIST);
 
     if (notifier_.noNotifyRate() > 0) {
+      //@yang, the drain() is called every 2ms 
+      // within drain(), postDrainCallback_ is called. 
       waitTimeout_ = folly::AsyncTimeout::schedule(
           std::chrono::milliseconds(kWakeupEveryMs),
           evb.getEventBase(),
@@ -323,6 +325,8 @@ class MessageQueue {
     uint64_t n = 1;
     PCHECK(::write(efd_, &n, sizeof(n)) == sizeof(n));
     if (notifyCallback_) {
+      //@yang, this callback function is called when receiving a req from 
+      // AsyncMcServer via CarbonRouterClient/ 
       notifyCallback_();
     }
   }

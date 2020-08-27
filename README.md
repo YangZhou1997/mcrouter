@@ -52,16 +52,26 @@ Alternatively, you can install dep and compile by:
 ```
 ./mcrouter/mcrouter/scripts/install_ubuntu_18.04.sh $HOME/mcrouter-install/ -j4
 export LD_LIBRARY_PATH=$HOME/mcrouter-install/install/lib
-sudo ln -s $HOME/mcrouter-install/install/bin/mcrouter /usr/local/bin/mcrouter
+# sudo ln -s $HOME/mcrouter-install/install/bin/mcrouter /usr/local/bin/mcrouter
+```
+
+You can rebuild mcrouter (once changes some files) by: 
+```
+cd mcrouter/mcrouter
+make -j16
 ```
 
 Assuming you have a memcached instance on the local host running on port 5001,
 the simplest mcrouter setup is:
 
-    $ sudo LD_LIBRARY_PATH=$HOME/mcrouter-install/install/lib mcrouter \
+    $ cd mcrouter/mcrouter
+    $ ./mcrouter \
         --config-str='{"pools":{"A":{"servers":["127.0.0.1:5001"]}},
                       "route":"PoolRoute|A"}' \
         -p 5000
+
+Using config file and setting verbosity to level-4. 
+    $ ./mcrouter --config-file=../configs/random.json -p 5000 -v 4
     $ echo -ne "get key\r\n" | nc 0 5000
 
 (nc is the GNU Netcat, http://netcat.sourceforge.net/)

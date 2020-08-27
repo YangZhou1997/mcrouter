@@ -176,6 +176,7 @@ class ServerOnRequest {
     };
 
     folly::Optional<std::string> peerIp;
+    //@yang, forward the received request on server to the proxy. 
     if (retainSourceIp_ && (peerIp = ctxRef.getPeerSocketAddressStr())) {
       client_.send(reqRef, std::move(cb), *peerIp);
     } else {

@@ -509,6 +509,10 @@ void runStandaloneMcrouter(
     const McrouterOptions& libmcrouterOptions,
     const McrouterStandaloneOptions& standaloneOptions,
     StandalonePreRunCb preRunCb) {
+  
+  // @yang
+  VLOG(2) << "num_proxies " << libmcrouterOptions.num_proxies;
+  
   try {
     if (cmdLineOpts.validateConfigMode == ValidateConfigMode::Exit) {
       if (standaloneOptions.use_thrift) {

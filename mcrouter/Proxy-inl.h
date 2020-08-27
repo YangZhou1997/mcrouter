@@ -187,9 +187,10 @@ Proxy<RouterInfo>::Proxy(
     size_t id,
     folly::VirtualEventBase& evb)
     : ProxyBase(rtr, id, evb, RouterInfo()) {
+  //@yang, Initing the message between AsyncMcServer and proxy. 
   messageQueue_ = std::make_unique<MessageQueue<ProxyMessage>>(
-      router().opts().client_queue_size,
-      [this](ProxyMessage&& message) {
+      router().opts().client_queue_size, // message queue capacity
+      [this](ProxyMessage&& message) { // this is onMessage_ callback used to process message
         this->messageReady(message.type, message.data);
       },
       router().opts().client_queue_no_notify_rate,
@@ -207,6 +208,7 @@ Proxy<RouterInfo>::Proxy(
             (!haveTasks ||
              ++noFlushLoops >= router().opts().max_no_flush_event_loops)) {
           noFlushLoops = 0;
+          //yang, flushCallback_ is actually a wrapper of ProxyBase, see ProxyBase.cpp. 
           flushCallback_.setList(std::move(flushList()));
           eventBase().getEventBase().runInLoop(
               &flushCallback_, true /* thisIteration */);

@@ -98,6 +98,7 @@ CarbonRouterInstance<RouterInfo>* CarbonRouterInstance<RouterInfo>::createRaw(
     initFailureLogger();
   }
 
+  // @yang, this just creates a CarbonRouterInstance without any initialization. 
   auto router = new CarbonRouterInstance<RouterInfo>(std::move(input_options));
 
   folly::Expected<folly::Unit, std::string> result;
@@ -232,6 +233,7 @@ CarbonRouterInstance<RouterInfo>::spinUp(
       }
 
       try {
+        // @yang, create a set of proxies
         proxies_.emplace_back(
             Proxy<RouterInfo>::createProxy(*this, *proxyEvbs_[i], i));
       } catch (...) {

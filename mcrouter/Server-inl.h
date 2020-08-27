@@ -92,6 +92,7 @@ void serverInit(
     const McrouterStandaloneOptions& standaloneOpts,
     std::function<void(McServerSession&)>& aclChecker,
     CarbonRouterClient<RouterInfo>* routerClient) {
+  // @yang, link to ServerOnRequest
   using RequestHandlerType = RequestHandler<ServerOnRequest<RouterInfo>>;
 
   auto proxy = router.getProxy(threadId);
@@ -191,6 +192,7 @@ void serverLoop(
   }
 }
 
+// @yang, get AsyncMcServer::Options from McrouterOptions and McrouterStandaloneOptions. 
 inline AsyncMcServer::Options createAsyncMcServerOptions(
     const McrouterOptions& mcrouterOpts,
     const McrouterStandaloneOptions& standaloneOpts,
@@ -538,6 +540,7 @@ bool runServer(
   try {
     LOG(INFO) << "Spawning AsyncMcServer";
 
+    //@yang, this is a wrapper for the underlying memcached instances?? 
     AsyncMcServer server(opts);
     server.installShutdownHandler({SIGINT, SIGTERM});
 
@@ -584,6 +587,7 @@ bool runServer(
         },
         [&shutdownBaton]() { shutdownBaton.post(); });
 
+    // @yang, this will wait until shutdownBaton.post() is called. 
     shutdownBaton.wait();
   } catch (const std::exception& e) {
     LOG(ERROR) << e.what();

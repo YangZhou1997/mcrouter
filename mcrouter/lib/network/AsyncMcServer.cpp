@@ -136,6 +136,7 @@ class McServerThreadSpawnController {
     if (isAcceptorThread) {
       try {
         acceptorFn();
+        //@yang, this will let AsyncMcServer::start() run. 
         if (++listeningThreadCount == numListeningSockets_) {
           acceptorPromise_.set_value();
         } else {
@@ -156,6 +157,7 @@ class McServerThreadSpawnController {
   std::atomic<size_t> listeningThreadCount{0};
   size_t numListeningSockets_{1};
 
+  //@yang, runningPromise_ is like a switch to control the thread proceeding
   std::promise<void> runningPromise_;
   std::shared_future<void> runningFuture_{runningPromise_.get_future()};
 
@@ -163,6 +165,7 @@ class McServerThreadSpawnController {
   std::shared_future<void> acceptorFuture_{acceptorPromise_.get_future()};
 };
 
+//@yang, once created, McServerThread will call startThread() which 
 class McServerThread {
  public:
   explicit McServerThread(AsyncMcServer& server, size_t id)
@@ -287,7 +290,7 @@ class McServerThread {
         // if an exception is thrown, something went wrong before startup.
         return;
       }
-
+      //@yang, this will call detail::serverLoop() in Server-inl.h;
       loopFn_(id_, eventBase(), worker_);
 
       // Detach the server sockets from the acceptor thread.
@@ -554,6 +557,7 @@ class McServerThread {
       if (!server_.opts_.ports.empty()) {
         socket_.reset(new folly::AsyncServerSocket());
         socket_->setReusePortEnabled(reusePort_);
+        // @yang, this socket will bind/listen on multiple ports. 
         for (auto port : server_.opts_.ports) {
           if (server_.opts_.listenAddresses.empty()) {
             socket_->bind(port);
@@ -599,6 +603,8 @@ class McServerThread {
       }
     }
 
+    //@yang, listening on socket_ (with specific ports)
+    // trying to accepting memcached connections from clients. 
     if (socket_) {
       socket_->listen(server_.opts_.tcpListenBacklog);
       socket_->startAccepting();
@@ -714,6 +720,17 @@ size_t AsyncMcServer::Options::setMaxConnections(
 }
 
 AsyncMcServer::AsyncMcServer(Options opts) : opts_(std::move(opts)) {
+  // @yang
+  VLOG(2) << "listenAddresses ";
+  for(uint i = 0; i < opts_.listenAddresses.size(); i++){
+    VLOG(2) << opts_.listenAddresses[i];
+  }
+  VLOG(2) << "ports ";
+  for(uint i = 0; i < opts_.ports.size(); i++){
+    VLOG(2) << opts_.ports[i];
+  }
+  VLOG(2) << "numThreads McServerThread " << opts_.numThreads;
+
   if (opts_.cpuControllerOpts.shouldEnable()) {
     auxiliaryEvbThread_ = std::make_unique<folly::ScopedEventBaseThread>();
 
@@ -841,6 +858,7 @@ void AsyncMcServer::start(std::function<void()> onShutdown) {
     }
   } while (!signalShutdownState_.compare_exchange_weak(
       state, SignalShutdownState::SPAWNED));
+  // we just wait on here. 
 }
 
 void AsyncMcServer::spawn(LoopFn fn, std::function<void()> onShutdown) {
@@ -851,6 +869,8 @@ void AsyncMcServer::spawn(LoopFn fn, std::function<void()> onShutdown) {
   for (size_t i = 0; i < threads_.size(); ++i) {
     threads_[i]->setLoopFn(fn);
   }
+  // @yang
+  LOG(INFO) << "Inside AsyncMcServer::spawn, thread number = " << threads_.size();
 
   start(onShutdown);
 }
