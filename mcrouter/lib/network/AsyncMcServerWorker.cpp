@@ -56,6 +56,7 @@ bool AsyncMcServerWorker::addClientSocket(int fd, void* userCtxt) {
   return addClientSocket(std::move(socket), userCtxt);
 }
 
+// @yang, multiple client-facing AsyncSockets is handled by one AsyncMcServerWorker
 bool AsyncMcServerWorker::addClientSocket(
     folly::AsyncTransportWrapper::UniquePtr transport,
     void* userCtxt) {

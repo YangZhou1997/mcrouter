@@ -101,6 +101,9 @@ Proxy<RouterInfo>::addRouteTask(
           return reply;
         }
       },
+      // @yang, refer to https://github.com/facebook/folly/tree/master/folly/fibers#addtaskfinally
+      // reply is exactly the return result of the first function.
+      // ctx->sendReply() will send the memcached results (value, error, etc) back to the User client. 
       [ctx = std::move(sharedCtx)](folly::Try<ReplyT<Request>>&& reply) {
         ctx->sendReply(std::move(*reply));
       });
@@ -225,9 +228,14 @@ Proxy<RouterInfo>* Proxy<RouterInfo>::createProxy(
   auto proxy = std::unique_ptr<Proxy>(new Proxy(router, id, eventBase));
   auto proxyPtr = proxy.get();
 
+    // If runInEventBaseThread() is called when the EventBase loop is not
+    // running, the function call will be delayed until the next time the loop is
+    // started.
   eventBase.runInEventBaseThread([proxyPtr, &eventBase]() {
     proxyPtr->messageQueue_->attachEventBase(eventBase);
 
+    //@yang, setup the loopcontroller to use eventbase. 
+    // eventbase is kind of bridge between messageQ and the fibers?? 
     dynamic_cast<folly::fibers::EventBaseLoopController&>(
         proxyPtr->fiberManager().loopController())
         .attachEventBase(eventBase);

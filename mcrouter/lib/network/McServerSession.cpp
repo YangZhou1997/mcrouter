@@ -265,12 +265,17 @@ void McServerSession::close() {
   checkClosed();
 }
 
+/* AsyncTransport's readCallback */
+// @yang, create a buf from parser, and provide it to AsyncTransport
+// AsyncTransport will write the incoming bytes into this buf
 void McServerSession::getReadBuffer(void** bufReturn, size_t* lenReturn) {
   curBuffer_ = parser_.getReadBuffer();
   *bufReturn = curBuffer_.first;
   *lenReturn = curBuffer_.second;
 }
 
+// @yang, this will be called by AsyncTransport after incoming bytes has been copied into the buf. 
+// then McServerSession calls parser_.readDataAvailable(len) to parse the raw bytes. 
 void McServerSession::readDataAvailable(size_t len) noexcept {
   DestructorGuard dg(this);
   if (!parser_.readDataAvailable(len)) {

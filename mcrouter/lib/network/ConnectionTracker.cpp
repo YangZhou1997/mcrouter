@@ -19,6 +19,8 @@ McServerSession& ConnectionTracker::add(
     void* userCtxt,
     const CompressionCodecMap* compressionCodecMap,
     McServerSession::KeepAlive keepAlive) {
+  //@yang, one thread maintains at maximum maxConns_ connections/sessions. 
+  // closing the oldest session in LRU way.
   if (maxConns_ != 0 && sessions_.size() >= maxConns_) {
     evict();
   }

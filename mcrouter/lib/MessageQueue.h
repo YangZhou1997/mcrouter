@@ -184,8 +184,10 @@ class MessageQueue {
         folly::EventHandler::READ | folly::EventHandler::PERSIST);
 
     if (notifier_.noNotifyRate() > 0) {
-      //@yang, the drain() is called every 2ms 
-      // within drain(), postDrainCallback_ is called. 
+      // @yang, the drain() is called every 2ms 
+      // within drain(), onMessage_ and postDrainCallback_ is called. 
+      // link to Proxy<RouterInfo>::Proxy().
+      // here, evb is used to schedule the drain() thread. 
       waitTimeout_ = folly::AsyncTimeout::schedule(
           std::chrono::milliseconds(kWakeupEveryMs),
           evb.getEventBase(),
@@ -318,6 +320,7 @@ class MessageQueue {
     // Note, we use this event fd purely for waking up a thread in epoll_wait.
     // It's usually executed immediately after runBeforeLoop callback, thus
     // no need to drain again.
+    // @yang, I guess this is used to wake up the drain() thread. 
   }
 
   void doNotify() {
@@ -326,13 +329,14 @@ class MessageQueue {
     PCHECK(::write(efd_, &n, sizeof(n)) == sizeof(n));
     if (notifyCallback_) {
       //@yang, this callback function is called when receiving a req from 
-      // AsyncMcServer via CarbonRouterClient/ 
+      // AsyncMcServer via CarbonRouterClient
       notifyCallback_();
     }
   }
 
   void drainImpl() {
     T message;
+    // @yang, process the 2ms of message in a batch. 
     while (queue_.read(message)) {
       onMessage_(std::move(message));
       notifier_.bumpMessages();

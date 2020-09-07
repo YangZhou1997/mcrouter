@@ -313,6 +313,7 @@ class DestinationRoute {
     auto res = false;
     auto attr = *req.attributes_ref();
     const auto asyncWriteStartUs = nowUs();
+    // @yang, logging the delete log. 
     if (auto asyncWriter = proxy->router().asyncWriter()) {
       res = asyncWriter->run([&b, &ap, &attr, proxy, key, asynclogName]() {
         if (proxy->asyncLog().writeDelete(ap, key, asynclogName, attr)) {
