@@ -39,7 +39,12 @@ ReplyT<Request> ProxyDestination<Transport>::send(
     std::chrono::milliseconds timeout,
     RpcStatsContext& rpcStatsContext) {
   markAsActive();
+  // @yang, in the fiber, this looks sync, but it explicitly yields out. 
+  // it calls baton.yield() to switch back to main context; 
+  // then main context switch to another fiber. 
+  // @yang, there transport_ is AsyncMcClientImpl.
   auto reply = getTransport().sendSync(request, timeout, &rpcStatsContext);
+  // @yang, update some stats for this reply. 
   onReply(
       *reply.result_ref(),
       requestContext,
@@ -310,13 +315,14 @@ void ProxyDestination<Transport>::initializeTransport() {
     options.securityOpts.tlsPreferOcbCipher = opts.tls_prefer_ocb_cipher;
   }
 
+  // @yang, Transport is AsyncMcClient.
   auto client =
       std::make_unique<Transport>(proxy().eventBase(), std::move(options));
   {
     folly::SpinLockGuard g(transportLock_);
     transport_ = std::move(client);
   }
-
+  // @yang, setFlushList lets AsyncMcClient::flushList_ point to proxy::flushList_
   transport_->setFlushList(&proxy().flushList());
 
   transport_->setRequestStatusCallbacks(RequestStatusCallbacks{

@@ -89,6 +89,7 @@ void AsyncMcClientImpl::WriterLoop::runLoopCallback() noexcept {
     return;
   }
   rescheduled_ = false;
+  // @yang, this seems sending the request to memcached instances in a batch. 
   client_.pushMessages();
 }
 
@@ -185,6 +186,7 @@ void AsyncMcClientImpl::sendCommon(McClientRequestContextBase& req) {
       queue_.markAsPending(req);
       scheduleNextWriterLoop();
       if (connectionState_ == ConnectionState::Down) {
+        // @yang, the connection 
         attemptConnection();
       }
       return;

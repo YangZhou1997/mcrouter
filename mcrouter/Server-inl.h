@@ -540,7 +540,6 @@ bool runServer(
   try {
     LOG(INFO) << "Spawning AsyncMcServer";
 
-    //@yang, this is a wrapper for the underlying memcached instances?? 
     AsyncMcServer server(opts);
     server.installShutdownHandler({SIGINT, SIGTERM});
 
@@ -562,9 +561,11 @@ bool runServer(
     };
 
     if (standaloneOpts.remote_thread) {
+      //@yang, creating new eventbases. 
       router =
           CarbonRouterInstance<RouterInfo>::init("standalone", mcrouterOpts);
     } else {
+      //@yang, if proxy and McServerThread are in the same thread, just reuse the eventbase of the AsyncMcServer. 
       router = CarbonRouterInstance<RouterInfo>::init(
           "standalone", mcrouterOpts, server.eventBases());
     }

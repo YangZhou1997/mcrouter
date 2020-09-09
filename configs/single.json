@@ -1,0 +1,18 @@
+{
+   "pools": {
+      "A": {
+         "servers": [
+           "node0:5001"
+         ]
+      }
+   },
+   "route": {
+     "type": "OperationSelectorRoute",
+     "operation_policies": {
+       "add": "AllSyncRoute|Pool|A",
+       "delete": "AllSyncRoute|Pool|A",
+       "get": "RandomRoute|Pool|A",
+       "set": "AllSyncRoute|Pool|A"
+     }
+   }
+ }

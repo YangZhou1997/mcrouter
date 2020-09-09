@@ -28,7 +28,7 @@ Update the local repo cache:
 
     $ sudo apt-get update
 
-Install mcrouter:
+Install mcrouter:s
 
     $ sudo apt-get install mcrouter
 
@@ -61,9 +61,12 @@ cd mcrouter/mcrouter
 make -j16
 ```
 
-Assuming you have a memcached instance on the local host running on port 5001,
-the simplest mcrouter setup is:
+You can rebuild the folly, fizz, etc by deleting mcrouter/scripts/.fmt-done and run: 
+```
+./mcrouter/mcrouter/scripts/install_ubuntu_18.04.sh $HOME/mcrouter-install/ -j4
+```
 
+Assuming you have a memcached instance on the local host running on port 5001, the simplest mcrouter setup is:
     $ cd mcrouter/mcrouter
     $ ./mcrouter \
         --config-str='{"pools":{"A":{"servers":["127.0.0.1:5001"]}},
@@ -72,7 +75,8 @@ the simplest mcrouter setup is:
 
 Using config file and setting verbosity to level-4. 
     $ ./mcrouter --config-file=../configs/random.json -p 5000 -v 4
-    $ echo -ne "get key\r\n" | nc 0 5000
+    $ printf "set mykey 0 0 4\r\ndata\r\n" | nc localhost 5000
+    $ printf "get mykey\r\n" | nc localhost 5000
 
 (nc is the GNU Netcat, http://netcat.sourceforge.net/)
 

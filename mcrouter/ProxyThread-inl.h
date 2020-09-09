@@ -13,6 +13,8 @@ namespace facebook {
 namespace memcache {
 namespace mcrouter {
 
+
+//@yang, this is a high-level wrapper for thread running with a eventbase. 
 inline ProxyThread::ProxyThread(
     const CarbonRouterInstanceBase& router,
     size_t /* id */) {

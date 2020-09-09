@@ -136,7 +136,7 @@ class McServerThreadSpawnController {
     if (isAcceptorThread) {
       try {
         acceptorFn();
-        //@yang, this will let AsyncMcServer::start() run. 
+        //@yang, this will finally let AsyncMcServer::start() run. 
         if (++listeningThreadCount == numListeningSockets_) {
           acceptorPromise_.set_value();
         } else {
@@ -488,6 +488,9 @@ class McServerThread {
    * @throw   If anything goes wrong when start accepting connections.
    */
   void startAccepting() {
+    // @yang, each McServerThread will listen on the AsyncServerSocket. 
+    // each connection will create a new AsyncSocket added to the FD 
+    // list monitored by evb in this McServerThread. 
     CHECK(accepting_);
     auto& opts = server_.opts_;
 

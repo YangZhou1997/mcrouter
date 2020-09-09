@@ -39,6 +39,7 @@ ReplyT<Request> AsyncMcClientImpl::sendSync(
       requestStatusCallbacks_.onStateChange,
       supportedCompressionCodecs_,
       connectionOptions_.payloadFormat);
+  // @yang, schedule the sending. 
   sendCommon(ctx);
 
   // Wait for the reply.

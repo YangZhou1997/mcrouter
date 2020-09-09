@@ -89,6 +89,7 @@ Proxy<RouterInfo>::addRouteTask(
         try {
           auto& proute = ctx->proxyRoute();
           fiber_local<RouterInfo>::setSharedCtx(std::move(ctx));
+          // @yang, call ``ReplyT<Request> route(const Request& req) const'' in ProxyRoute.h
           return proute.route(req);
         } catch (const std::exception& e) {
           auto err = folly::sformat(
@@ -211,7 +212,14 @@ Proxy<RouterInfo>::Proxy(
             (!haveTasks ||
              ++noFlushLoops >= router().opts().max_no_flush_event_loops)) {
           noFlushLoops = 0;
-          //yang, flushCallback_ is actually a wrapper of ProxyBase, see ProxyBase.cpp. 
+          // @yang, flushList_ contains the callbacks added by AsyncMcClientImpl; 
+          // this is set by ``transport_->setFlushList(&proxy().flushList());'' in ProxyDestination-inl.h. 
+          // Here, we flush these callbacks every time after we drain a queue (2ms).
+          // the callback is exactly ``void AsyncMcClientImpl::WriterLoop::runLoopCallback() noexcept'',
+          // which finally calls ``void AsyncMcClientImpl::pushMessages()'',
+          // which will drain ``McClientRequestContextQueue queue_''. 
+          // Note that queue_.markAsPending(req) in ``void AsyncMcClientImpl::sendCommon(McClientRequestContextBase& req)''
+          // adds request to queue_.
           flushCallback_.setList(std::move(flushList()));
           eventBase().getEventBase().runInLoop(
               &flushCallback_, true /* thisIteration */);
@@ -225,6 +233,7 @@ Proxy<RouterInfo>* Proxy<RouterInfo>::createProxy(
     CarbonRouterInstanceBase& router,
     folly::VirtualEventBase& eventBase,
     size_t id) {
+  // @yang, this eventBase is tied to the proxy thread, and loop forever (written in ProxyThread->EventBaseThread)
   auto proxy = std::unique_ptr<Proxy>(new Proxy(router, id, eventBase));
   auto proxyPtr = proxy.get();
 
@@ -233,6 +242,8 @@ Proxy<RouterInfo>* Proxy<RouterInfo>::createProxy(
     // started.
   eventBase.runInEventBaseThread([proxyPtr, &eventBase]() {
     proxyPtr->messageQueue_->attachEventBase(eventBase);
+    // @yang, MessageQueue and Proxy thread share the same eventBase, 
+    // the eventBase in MessageQueue is used for 2ms chronic time events. 
 
     //@yang, setup the loopcontroller to use eventbase. 
     // eventbase is kind of bridge between messageQ and the fibers?? 
@@ -243,6 +254,7 @@ Proxy<RouterInfo>* Proxy<RouterInfo>::createProxy(
     std::chrono::milliseconds connectionResetInterval{
         proxyPtr->router().opts().reset_inactive_connection_interval};
 
+    //@yang, this should be related to the underlying memcached pool management. 
     if (connectionResetInterval.count() > 0) {
       proxyPtr->destinationMap()->setResetTimer(connectionResetInterval);
     }
