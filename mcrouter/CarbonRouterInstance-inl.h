@@ -163,6 +163,7 @@ typename CarbonRouterClient<RouterInfo>::Pointer
 CarbonRouterInstance<RouterInfo>::createClient(
     size_t max_outstanding,
     bool max_outstanding_error) {
+  // @yang, create the CarbonRouterInstance on another thread. 
   return CarbonRouterClient<RouterInfo>::create(
       this->shared_from_this(),
       max_outstanding,

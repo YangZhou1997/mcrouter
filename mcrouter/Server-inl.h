@@ -173,6 +173,7 @@ void serverLoop(
     AsyncMcServerWorker& worker,
     const McrouterStandaloneOptions& standaloneOpts,
     std::function<void(McServerSession&)>& aclChecker) {
+  // @yang, get a client for CarbonRouterInstance. 
   auto routerClient = standaloneOpts.remote_thread
       ? router.createClient(0 /* maximum_outstanding_requests */)
       : router.createSameThreadClient(0 /* maximum_outstanding_requests */);
@@ -540,6 +541,7 @@ bool runServer(
   try {
     LOG(INFO) << "Spawning AsyncMcServer";
 
+    // @yang, create new AsyncMcServer. 
     AsyncMcServer server(opts);
     server.installShutdownHandler({SIGINT, SIGTERM});
 
@@ -578,6 +580,7 @@ bool runServer(
 
     auto aclChecker = detail::getAclChecker(mcrouterOpts, standaloneOpts);
     folly::Baton<> shutdownBaton;
+    // @yang, for each AsyncMcServerWorker, create a new CarbonRouterClient
     server.spawn(
         [router, &standaloneOpts, &aclChecker](
             size_t threadId,
