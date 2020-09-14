@@ -7,7 +7,7 @@
 source common.sh
 
 if [[ ! -d folly ]]; then
-  git clone git@github.com:YangZhou1997/mcrouter.git
+  git clone git@github.com:YangZhou1997/folly.git
   cd "$PKG_DIR/folly" || die "cd fail"
   if [[ -f "$REPO_BASE_DIR/mcrouter/FOLLY_COMMIT" ]]; then
     FOLLY_COMMIT="$(head -n 1 "$REPO_BASE_DIR/mcrouter/FOLLY_COMMIT")"
