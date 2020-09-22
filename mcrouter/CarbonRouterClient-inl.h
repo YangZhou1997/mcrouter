@@ -99,7 +99,8 @@ bool CarbonRouterClient<RouterInfo>::send(
   auto cancelRemaining = [&req, &callback]() {
     callback(req, ReplyT<Request>(carbon::Result::LOCAL_ERROR));
   };
-
+  //@yang, printing proxyIdx_ and current thread ID
+  VLOG(4) << "proxyIdx_: " << proxyIdx_ << "; CarbonRouterClient Thread Id: " << std::this_thread::get_id();
   return sendMultiImpl(1, std::move(makePreq), std::move(cancelRemaining));
 }
 
@@ -120,6 +121,7 @@ bool CarbonRouterClient<RouterInfo>::sendMultiImpl(
       proxies_[proxyIdx_]->messageQueue_->notifyRelaxed();
     } else {
       assert(mode_ == ThreadMode::AffinitizedRemoteThread);
+      // @yang, here is how AsyncMcServer Threads forward requests to the proxy thread. 
       for (size_t i = 0; i < proxies_.size(); ++i) {
         if (proxiesToNotify_[i]) {
           proxies_[i]->messageQueue_->notifyRelaxed();

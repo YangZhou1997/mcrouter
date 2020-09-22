@@ -802,6 +802,8 @@ AsyncMcServer::AsyncMcServer(Options opts) : opts_(std::move(opts)) {
           "Unexpected option: opts_.numListeningSockets={}",
           opts_.numListeningSockets));
     }
+    // @yang, printing the numListeningSockets and numThreads
+    VLOG(4) << "opts_.numListeningSockets: " << opts_.numListeningSockets << "; opts_.numThreads: " << opts_.numThreads << "\n";
 
     threadsSpawnController_ = std::make_unique<McServerThreadSpawnController>(
         opts_.numListeningSockets);

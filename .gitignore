@@ -1,0 +1,8 @@
+gen-cpp2/
+gen/
+mcrouter/scripts/.fizz-done
+mcrouter/scripts/.fmt-done
+mcrouter/scripts/.folly-done
+mcrouter/scripts/.wangle-done
+mcrouter/scripts/all
+mcrouter/scripts/.fbthrift-done

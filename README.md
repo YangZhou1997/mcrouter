@@ -67,17 +67,23 @@ You can rebuild the folly, fizz, etc by deleting mcrouter/scripts/.fmt-done and 
 ```
 
 Assuming you have a memcached instance on the local host running on port 5001, the simplest mcrouter setup is:
+    
     $ cd mcrouter/mcrouter
     $ ./mcrouter \
         --config-str='{"pools":{"A":{"servers":["127.0.0.1:5001"]}},
                       "route":"PoolRoute|A"}' \
         -p 5000
 
-Using config file and setting verbosity to level-4. 
-    $ ./mcrouter --config-file=../configs/random.json -p 5000 -v 4
-    $ printf "set mykey 0 0 4\r\ndata\r\n" | nc localhost 5000
-    $ printf "get mykey\r\n" | nc localhost 5000
-
+```
+# Using config file and setting verbosity to level-4. 
+./mcrouter --config-file=../configs/random.json -p 5000 -v 4 --num-proxies 16 --remote-thread true  --thread-affinity true
+# set thread-affinity to minimize the number of connections between clients and memcached server (this willl hurt performance). 
+./mcrouter --config-file=../configs/random.json -p 5000 --num-listening-sockets 16 --num-proxies 16 --remote-thread true --thread-affinity true
+# set max connections from clients. 
+./mcrouter --config-file=../configs/random.json -p 5000 --num-listening-sockets 16 --num-proxies 16 --remote-thread true --max-conns 32768
+printf "set mykey 0 0 4\r\ndata\r\n" | nc localhost 5000
+printf "get mykey\r\n" | nc localhost 5000
+```
 (nc is the GNU Netcat, http://netcat.sourceforge.net/)
 
 ## Features
