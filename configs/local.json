@@ -2,7 +2,7 @@
    "pools": {
       "A": {
          "servers": [
-           "node-5:5001"
+           "localhost:5001"
          ]
       }
    },

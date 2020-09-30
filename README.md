@@ -77,10 +77,16 @@ Assuming you have a memcached instance on the local host running on port 5001, t
 ```
 # Using config file and setting verbosity to level-4. 
 ./mcrouter --config-file=../configs/random.json -p 5000 -v 4 --num-proxies 16 --remote-thread true  --thread-affinity true
+
 # set thread-affinity to minimize the number of connections between clients and memcached server (this willl hurt performance). 
 ./mcrouter --config-file=../configs/random.json -p 5000 --num-listening-sockets 16 --num-proxies 16 --remote-thread true --thread-affinity true
+
 # set max connections from clients. 
 ./mcrouter --config-file=../configs/random.json -p 5000 --num-listening-sockets 16 --num-proxies 16 --remote-thread true --max-conns 32768
+
+# using embeded mode. 
+./mcrouter --config-file=../configs/random.json -p 5000 --num-listening-sockets 16 --num-proxies 16 --max-conns 32768
+
 printf "set mykey 0 0 4\r\ndata\r\n" | nc localhost 5000
 printf "get mykey\r\n" | nc localhost 5000
 ```
